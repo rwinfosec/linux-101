@@ -2,22 +2,15 @@ SHELL := /bin/bash
 
 BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_COMMIT := $(shell git rev-parse HEAD)
-IMAGE_NAME := "test"
+IMAGE_NAME := "linux-101"
 TAG := $(GIT_COMMIT)
 TAG_SUFFIX := $(shell echo -SNAPSHOT)
-VCS_URL := $(shell git config --get remote.origin.url)
-DOCKER_ENV_BUILD_ARG := $(shell echo "--build-arg ENVIRONMENT=local")
 
 ################################ Docker Targets ###############################
 
 .PHONY: docker-build
 docker-build: $(DOCKER_BUILD_TARGETS)
 	@docker build \
-		--build-arg VCS_REF="$(TAG)$(TAG_SUFFIX)" \
-		--build-arg VCS_URL="$(VCS_URL)" \
-		--build-arg BUILD_DATE="$(BUILD_DATE)" \
-		--build-arg VERSION="$(TAG)" \
-		$(DOCKER_ENV_BUILD_ARG) \
 		-t $(IMAGE_NAME):"$(TAG)$(TAG_SUFFIX)" \
 		-f docker/Dockerfile \
 		.
@@ -25,3 +18,12 @@ docker-build: $(DOCKER_BUILD_TARGETS)
 .PHONY: tag-latest
 tag-latest: docker-build
 	docker tag ${IMAGE_NAME}:"${TAG}-SNAPSHOT" ${IMAGE_NAME}:latest
+
+
+.PHONY: run-local
+run-local:
+	sed -e 's|<container-version>|$(TAG)$(TAG_SUFFIX)|g' docker-compose.yml | docker-compose --project-name linux-101 -f /dev/stdin up -d
+
+.PHONY: stop-local
+stop-local:
+	docker stop linux-101_linux-101_1
