@@ -14,10 +14,15 @@ make docker-build
 
 2. Start the docker container
 ```bash
-make docker-run
+make run-local
 ```
 
 3. ssh to the container on port 2222 with the user `gumby` and password `pokey`
 ```bash
 ssh -p 2222 gumby@localhost
+```
+
+4. To stop the container
+```bash
+make stop-local
 ```
